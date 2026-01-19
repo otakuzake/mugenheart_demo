@@ -1,0 +1,40 @@
+{
+    "body": [
+        {
+            "desc": "ガリガリ（病的）",
+            "tags": "skinny, thin body, weak"
+        },
+        {
+            "desc": "細身（スレンダー）",
+            "tags": "slender, slim body"
+        },
+        {
+            "desc": "細マッチョ（引き締め）",
+            "tags": "toned body, lean muscle"
+        },
+        {
+            "desc": "普通体型",
+            "tags": "average body"
+        },
+        {
+            "desc": "ソフトマッチョ（筋肉質）",
+            "tags": "athletic, muscular"
+        },
+        {
+            "desc": "がっちりマッチョ（ゴリ）",
+            "tags": "buraun, heavy muscle, bara"
+        },
+        {
+            "desc": "ガチムチ（熊系）",
+            "tags": "thick muscle, bear mode, huge body"
+        },
+        {
+            "desc": "小柄",
+            "tags": "short stature, shota"
+        },
+        {
+            "desc": "長身",
+            "tags": "tall, long legs"
+        }
+    ]
+}

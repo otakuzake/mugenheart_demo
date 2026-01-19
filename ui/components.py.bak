@@ -1,0 +1,569 @@
+import streamlit as st
+import re
+from PIL import Image
+import os
+import io
+import base64
+
+# Color Presets for Character Cards
+MAIN_COLORS = {
+    "bg": "#2a203a",  # plum
+    "border": "#ff4d8d",
+    "bar_grad": "linear-gradient(90deg, rgba(255,90,150,0.95), rgba(120,160,255,0.95))"
+}
+
+SUB_COLORS = {
+    "bg": "#2a203a",  # same as main (dark plum)
+    "border": "#ff9800", # Orange
+    "bar_grad": "linear-gradient(90deg, rgba(255,152,0,0.95), rgba(255,193,7,0.95))"
+}
+
+def inject_custom_css():
+    # --- Dynamic Background Image ---
+    bg_style = ""
+    # bg_path = os.path.join("assets", "ui", "hearttile.png")
+    # if os.path.exists(bg_path):
+    #     with open(bg_path, "rb") as f:
+    #         b64 = base64.b64encode(f.read()).decode()
+    #         bg_style = f"""
+    #         <style>
+    #         body, .stApp {{
+    #             background-image: url("data:image/png;base64,{b64}") !important;
+    #             background-repeat: repeat !important;
+    #             background-position: top left !important;
+    #             background-size: 64px !important;
+    #         }}
+    #         </style>
+    #         """
+    
+    if bg_style:
+        st.markdown(bg_style, unsafe_allow_html=True)
+
+    # --- Title Screen (Game-Like) ---
+
+
+    st.markdown(f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap');
+    
+    body, .stApp {{
+        font-family: 'M PLUS Rounded 1c', sans-serif !important;
+        font-weight: 500 !important;
+        color: #444444 !important;
+        background: linear-gradient(180deg, #f6d7df 0%, #d9d7ef 55%, #cfd9e9 100%) !important;
+    }}
+    
+    header {{ display: none !important; }}
+    [data-testid="stHeader"] {{ display: none !important; }}
+    [data-testid="stToolbar"] {{ display: none !important; }}
+    [data-testid="stDecoration"] {{ display: none !important; }}
+    #MainMenu {{ visibility: hidden !important; }}
+    footer {{ visibility: hidden !important; }}
+
+    /* ===== Title Screen (restore original look) ===== */
+    .mh-title-stage{{
+        position: relative;
+        width: 100%;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 16px 44px rgba(0,0,0,0.35);
+    }}
+    .mh-title-stage img{{
+        width: 100%;
+        height: auto;
+        display: block;
+    }}
+    .mh-title-overlay{{
+        position:absolute;
+        inset:0;
+        background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.55) 100%);
+    }}
+    .mh-title-card{{
+        position:absolute;
+        left:50%;
+        top:50%;
+        transform:translate(-50%,-50%);
+        width: min(980px, 92vw);
+        background: rgba(18,18,24,0.62);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 18px;
+        padding: 18px 18px 14px 18px;
+        box-shadow: 0 18px 52px rgba(0,0,0,0.55);
+        backdrop-filter: blur(12px);
+    }}
+    .mh-title-card h2{{
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        color: rgba(255,255,255,0.85);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }}
+    .mh-title-note{{
+        margin-top: 8px;
+        font-size: 12px;
+        color: rgba(255,255,255,0.55);
+    }}
+    /* remove horizontal scroll just in case */
+    html, body {{ overflow-x: hidden; }}
+
+    .chat-window {{
+        height: 70vh;
+        overflow-y: auto;
+        background-color: #94bce4;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }}
+    .narrative {{
+        align-self: center;
+        text-align: center;
+        color: #ffffff !important;
+        font-size: 0.85rem;
+        background-color: rgba(0,0,0,0.1);
+        padding: 8px 15px;
+        border-radius: 12px;
+        margin: 6px auto;
+        width: 90%;
+        line-height: 1.5;
+    }}
+    .narrative em {{
+        font-style: italic;
+        font-weight: bold;
+        margin: 0 4px;
+    }}
+    .bubble-container {{
+        display: flex;
+        margin-bottom: 10px;
+        align-items: flex-start;
+    }}
+    .heroine-row {{
+        flex-direction: row;
+    }}
+    .user-row {{
+        flex-direction: row-reverse;
+    }}
+    .chat-bubble {{
+        padding: 10px 14px;
+        border-radius: 15px;
+        font-size: 0.95em;
+        position: relative;
+        max-width: 70%;
+        line-height: 1.5;
+        box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }}
+    .heroine-bubble {{
+        background-color: #ffffff;
+        color: #333333;
+        border-top-left-radius: 2px;
+        margin-left: 8px;
+    }}
+    .heroine-bubble::before {{
+        content: "◀";
+        position: absolute;
+        left: -10px;
+        top: 10px;
+        color: #ffffff;
+        font-size: 12px;
+    }}
+    .user-bubble {{
+        background-color: #ffccd5;
+        color: #333333;
+        border-top-right-radius: 2px;
+        margin-right: 8px;
+    }}
+    .user-bubble::before {{
+        content: "▶";
+        position: absolute;
+        right: -10px;
+        top: 10px;
+        color: #ffccd5;
+        font-size: 12px;
+    }}
+    .monologue-bubble {{
+        background-color: transparent;
+        border: 2px solid #ffccd5;
+        color: #555;
+        border-radius: 15px;
+        padding: 8px 12px;
+        font-size: 0.9em;
+        margin-right: 8px;
+        max-width: 70%;
+    }}
+    .heroine-icon {{
+        font-size: 24px;
+        margin-top: -5px;
+    }}
+    [data-testid="stTextInput"] input {{
+        background-color: #ffffff !important;
+        color: #333333 !important;
+        border: 2px solid #ffccd5 !important;
+        border-radius: 8px;
+    }}
+    [data-testid="stTextInput"] label {{
+        display: None;
+    }}
+    .profile-card {{
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #ffc1e3;
+        font-size: 0.9em;
+        margin-bottom: 10px;
+        color: #444;
+    }}
+    div.stButton > button {{
+        background-color: #ffffff;
+        border: 1px solid #ffccd5;
+        color: #e91e63;
+    }}
+    div.stButton > button:hover {{
+        border-color: #e91e63;
+        color: #e91e63;
+    }}
+    
+    /* --- Speaker Pills --- */
+    .speaker-pill {{
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        margin: 0 0 4px 6px; /* Just above bubble */
+        border: 1px solid rgba(0,0,0,0.08);
+        background: rgba(255,255,255,0.75);
+        color: #333;
+        white-space: nowrap;
+    }}
+    .speaker-main {{ background: rgba(255,180,210,0.55); }}
+    .speaker-sub  {{ 
+        background: rgba(255, 190, 120, 0.70);
+        border-color: rgba(255, 150, 60, 0.55);
+        color: #333;
+    }}
+    .speaker-third {{ background: rgba(205,180,255,0.60); }}
+    
+    /* --- Compact UI Spacing --- */
+    .chat-window {{ margin-bottom: 4px !important; }}
+    div.stButton {{ margin-top: 0px !important; margin-bottom: 0px !important; }}
+    div[data-testid="stChatInput"] {{ margin-top: 4px !important; }}
+    
+    /* --- Tight Prompt Display --- */
+    .stCodeBlock {{ margin-top: 2px !important; }}
+    [data-testid="stCaptionContainer"] {{ margin-top: 4px !important; margin-bottom: 0px !important; }}
+
+    /* --- Subtle Edit Buttons (Strict Override) --- */
+    .edit-btn-row div.stButton > button {{
+      background: rgba(255,255,255,0.55) !important;
+      border: 1px solid rgba(0,0,0,0.08) !important;
+      color: rgba(0,0,0,0.55) !important;
+      border-radius: 12px !important;
+      box-shadow: none !important;
+
+      /* Fixed Sizing */
+      width: 100% !important;
+      min-width: 0 !important;
+      height: 38px !important;
+      padding: 0 !important;
+      font-size: 12px !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.08em !important;
+
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }}
+
+    .edit-btn-row div.stButton > button:hover {{
+      background: rgba(255,255,255,0.75) !important;
+      border-color: rgba(233, 30, 99, 0.18) !important;
+      color: rgba(233, 30, 99, 0.65) !important;
+    }}
+
+    .edit-btn-row div.stButton > button:disabled,
+    .edit-btn-row div.stButton > button[disabled] {{
+      background: rgba(255,255,255,0.25) !important;
+      border-color: rgba(0,0,0,0.06) !important;
+      color: rgba(0,0,0,0.25) !important;
+      opacity: 1 !important;
+      filter: none !important;
+      filter: none !important;
+    }}
+
+    /* --- Title Screen (Game-Like) --- */
+    .title-bg {{
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 0;
+      /* background-image set dynamically below */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }}
+
+
+    
+    /* Scoped "Candy" Buttons */
+    .action-btns div.stButton > button {{
+      background: linear-gradient(to bottom, #ffe6fa, #ffcce6) !important;
+      border: 2px solid #ffb3d9 !important;
+      border-radius: 20px !important;
+      color: #d63384 !important;
+      font-weight: 800 !important;
+      box-shadow: 0 4px 6px rgba(255, 182, 193, 0.4) !important;
+      transition: all 0.2s ease !important;
+    }}
+    .action-btns div.stButton > button:hover {{
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 8px rgba(255, 182, 193, 0.6) !important;
+      background: linear-gradient(to bottom, #fff0fb, #ffd9ef) !important;
+    }}
+
+    /* Cute Input Fields */
+    [data-testid="stTextInput"] input {{
+      border-radius: 15px !important;
+      border: 2px solid #FECFEF !important;
+      background-color: rgba(255, 255, 255, 0.9) !important;
+    }}
+    [data-testid="stTextInput"] input:focus {{
+      border-color: #FF9A9E !important;
+      box-shadow: 0 0 5px rgba(255, 154, 158, 0.5) !important;
+      outline: none !important;
+    }}
+
+    /* Pink Scrollbar */
+    ::-webkit-scrollbar {{
+      width: 10px;
+      height: 10px;
+    }}
+    ::-webkit-scrollbar-track {{
+      background: #fff0f5; 
+    }}
+    ::-webkit-scrollbar-thumb {{
+      background: #ffb3c1; 
+      border-radius: 5px;
+    }}
+    ::-webkit-scrollbar-thumb:hover {{
+      background: #ff8fa3; 
+    }}
+
+    /* --- Title Screen (Dummy) --- */
+    .title-screen {{
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }}
+    .title-card {{
+        width: min(720px, 92vw);
+        background: rgba(255,255,255,0.85); /* Slightly more opaque */
+        border: 1px solid rgba(255, 182, 193, 0.3); /* Soft pink border */
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(255, 105, 180, 0.15); /* Soft pink glow */
+        text-align: center;
+    }}
+    .title-logo {{
+        font-size: 32px;
+        font-weight: 900;
+        color: #e91e63;
+        margin-bottom: 20px;
+        text-shadow: 0 2px 4px rgba(233, 30, 99, 0.2);
+    }}
+    
+
+
+    
+
+
+    div[data-testid="stHorizontalBlock"] {{
+        gap: 12px !important;
+    }}
+
+    /* --- Relationship Phase Hero Card CSS --- */
+    .hero-card {{
+        background: rgba(20,20,24,0.85);
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+        margin-bottom: 10px;
+    }}
+    .hero-img {{
+        margin-top: 0;
+    }}
+    .hero-name {{
+        font-weight: 600;
+        font-size: 14px;
+        margin: 6px 0 2px 0;
+        color: #fff;
+    }}
+    .hero-meta {{
+        color: rgba(255,255,255,0.78);
+        font-size: 12px;
+        margin-bottom: 6px;
+    }}
+    .hero-prof {{
+        color: rgba(255,255,255,0.62);
+        font-size: 12px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+
+def display_chat(history, heroine_icon="👩"):
+    chat_html = '<div class="chat-window">'
+    for msg in history:
+        text = msg.get('display_text', msg['parts'][0])
+        display_text = re.sub(r"<emo>.*?</emo>", "", text, flags=re.DOTALL)
+        display_text = re.sub(r"(?m)^\s*[【\[].*?[】\]]\s*\d+.*$", "", display_text)
+        display_text = re.sub(r"(?m)^(❤️|😈|🧠|好感度|興奮度|理性).*?$", "", display_text)
+        display_text = re.sub(r"「\s*(\*\*.*?\*\*)\s*」", r"\1", display_text)
+
+        if not display_text.strip(): continue
+        
+        if msg['role'] == 'user':
+            clean = display_text.strip("()（）")
+            if display_text.strip().startswith("(") or display_text.strip().startswith("（"):
+                chat_html += f'<div class="bubble-container user-row"><div class="monologue-bubble">{clean}</div></div>'
+            else:
+                clean = display_text.strip("「").strip("」")
+                chat_html += f'<div class="bubble-container user-row"><div class="chat-bubble user-bubble">{clean}</div></div>'
+        else:
+            lines = display_text.split('\n')
+            for line in lines:
+                p = line.strip()
+                if not p: continue
+                
+                # Check for bubble vs narrative
+                if re.fullmatch(r"「[^」]+」", p) and not re.match(r"「[（(『]", p):
+                    clean = p.strip("「」")
+                    clean = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', clean)
+                    clean = clean.replace('\n', '<br>')
+                    
+                    # --- Speaker Pill Logic ---
+                    spk = msg.get("speaker", "")
+                    pill = ""
+                    if spk in ("main", "sub", "third"):
+                         cls = "speaker-main" if spk=="main" else ("speaker-sub" if spk=="sub" else "speaker-third")
+                         nm = msg.get("speaker_name", "") or ("メイン" if spk=="main" else ("サブ" if spk=="sub" else "???"))
+                         pill = f"<div class='speaker-pill {cls}'>{nm}</div>"
+                    
+                    chat_html += f"<div class='bubble-container heroine-row'><div>{pill}<div class='chat-bubble heroine-bubble'>{clean}</div></div></div>"
+                else:
+                    narrative = p
+                    narrative = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', narrative)
+                    narrative = re.sub(r'\*(.+?)\*', r'<em>\1</em>', narrative)
+                    narrative = re.sub(r'[”"]', '', narrative)
+                    narrative = narrative.replace('\n', '<br>')
+                    chat_html += f'<div class="narrative">{narrative}</div>'
+    
+    
+    chat_html += '</div>'
+    st.markdown(chat_html, unsafe_allow_html=True)
+
+# --- New UI components for Left Column V2 ---
+
+def crop_bust_shot(image_path: str, top_ratio: float = 0.0, bottom_ratio: float = 0.55):
+    try:
+        if not image_path or not os.path.exists(image_path):
+            return None
+        img = Image.open(image_path).convert("RGB")
+        w, h = img.size
+        top = int(h * top_ratio)
+        bottom = int(h * bottom_ratio)
+        bottom = max(bottom, top + 1)
+        cropped = img.crop((0, top, w, bottom))
+        return cropped
+    except Exception:
+        return None
+
+
+
+def render_character_card(h, colors, is_active=False):
+    if h is None:
+        return
+
+    name = getattr(h, "name", "")
+    age = getattr(h, "age", "")
+    job = getattr(h, "job", "")
+
+    bond = getattr(h, "bond_level", 0)
+    try:
+        bond = int(bond)
+    except Exception:
+        bond = 0
+
+    love = max(0, min(int(getattr(h, "love", 0)), 100))
+    lust = max(0, min(int(getattr(h, "lust", 0)), 100))
+    reason = max(0, min(int(getattr(h, "reason", 0)), 100))
+    possession = getattr(h, "possession", 30)
+    possession = max(0, min(int(possession if possession else 30), 100))
+
+    # Color Variables
+    CARD_BG = colors["bg"]
+    
+    if is_active:
+        # Active: Yellow border + glow
+        CARD_BORDER = "2px solid #ffd54a"
+        BOX_SHADOW = "0 0 0 2px rgba(255,213,74,0.9), 0 0 18px rgba(255,213,74,0.35)"
+    else:
+        # Normal
+        CARD_BORDER = f"1px solid {colors['border']}"
+        BOX_SHADOW = "0 10px 28px rgba(0,0,0,0.35)"
+
+    INNER_BORDER = colors["border"] # Header internal border stays theme color
+    BAR_GRAD = colors["bar_grad"]
+    TEXT_MAIN = "#ffffff"
+    TEXT_SUB = "rgba(255,255,255,0.85)"
+
+    # Top5 (Real Data or Monitoring)
+    show_monitoring = False
+    if hasattr(h, "emotions_top5") and isinstance(h.emotions_top5, list) and h.emotions_top5:
+        chips = h.emotions_top5
+    else:
+        show_monitoring = True
+        chips = []
+
+    if show_monitoring:
+        chip_html = f"<div style='font-size:12px;opacity:0.6;font-style:italic;margin-top:6px;color:{TEXT_SUB};'>脳内モニタ計測中…</div>"
+    else:
+        chip_html = "".join([
+            f"<span style='display:inline-block;padding:6px 10px;margin:6px 8px 0 0;"
+            f"background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.14);"
+            f"border-radius:999px;font-size:12px;color:rgba(255,255,255,0.88);'>{k}:{v}%</span>"
+            for k,v in chips
+        ])
+
+    # HTMLをインデントなしで構築してMarkdownのコードブロック化を防ぐ
+    def bar_row(label, v):
+        return f'<div style="display:flex;align-items:center;gap:10px;margin:10px 0;">' \
+               f'<div style="width:92px;font-size:13px;color:{TEXT_SUB};white-space:nowrap;">{label}</div>' \
+               f'<div style="flex:1;height:10px;background:rgba(255,255,255,0.14);border-radius:999px;overflow:hidden;">' \
+               f'<div style="height:10px;width:{v}%;background:{BAR_GRAD};border-radius:999px;"></div>' \
+               f'</div>' \
+               f'<div style="width:40px;text-align:right;font-size:12px;color:rgba(255,255,255,0.55);">{v}%</div>' \
+               f'</div>'
+
+    html = f'<div style="background:{CARD_BG};border:{CARD_BORDER};border-radius:16px;padding:14px;box-shadow:{BOX_SHADOW};">' \
+           f'<div style="background:{CARD_BG};border:2px solid {INNER_BORDER};border-radius:12px;padding:10px 12px;margin-bottom:12px;">' \
+           f'<div style="font-size:22px;font-weight:900;color:{TEXT_MAIN};">{name}</div>' \
+           f'<div style="font-size:12px;color:{TEXT_SUB};margin-top:4px;">{age} / {job}</div>' \
+           f'<div style="margin-top:6px;margin-bottom:8px;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#f5c542;text-shadow:0 1px 2px rgba(0,0,0,0.35);">💛 キズナ Lv.{bond}</div>' \
+           f'</div>' \
+           f'{bar_row("❤️ 好感度", love)}' \
+           f'{bar_row("😈 興奮度", lust)}' \
+           f'{bar_row("🧊 理性", reason)}' \
+           f'{bar_row("💘 独占欲", possession)}' \
+           f'<div style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.10);padding-top:12px;">' \
+           f'<div style="font-size:14px;font-weight:800;color:{TEXT_SUB};margin-bottom:6px;">脳内モニタ（Top 5）</div>' \
+           f'{chip_html}' \
+           f'</div>' \
+           f'</div>'
+
+    st.markdown(html, unsafe_allow_html=True)
+

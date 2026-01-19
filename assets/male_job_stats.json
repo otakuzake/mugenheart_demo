@@ -1,0 +1,170 @@
+{
+    "description": "職業キーワードと基礎ガード値(Chastity)。ヒプマイ＆学園要素追加版。",
+    "default_chastity": 70,
+    "status_map": [
+        {
+            "keyword": "教祖",
+            "chastity": 99
+        },
+        {
+            "keyword": "僧侶",
+            "chastity": 98
+        },
+        {
+            "keyword": "警官",
+            "chastity": 95
+        },
+        {
+            "keyword": "刑事",
+            "chastity": 95
+        },
+        {
+            "keyword": "軍人",
+            "chastity": 96
+        },
+        {
+            "keyword": "自衛官",
+            "chastity": 94
+        },
+        {
+            "keyword": "弁護士",
+            "chastity": 93
+        },
+        {
+            "keyword": "検事",
+            "chastity": 93
+        },
+        {
+            "keyword": "医師",
+            "chastity": 92
+        },
+        {
+            "keyword": "科学者",
+            "chastity": 91
+        },
+        {
+            "keyword": "研究",
+            "chastity": 90
+        },
+        {
+            "keyword": "執事",
+            "chastity": 90
+        },
+        {
+            "keyword": "教師",
+            "chastity": 88
+        },
+        {
+            "keyword": "教授",
+            "chastity": 89
+        },
+        {
+            "keyword": "先輩",
+            "chastity": 85
+        },
+        {
+            "keyword": "社長",
+            "chastity": 84
+        },
+        {
+            "keyword": "起業家",
+            "chastity": 84
+        },
+        {
+            "keyword": "ヤクザ",
+            "chastity": 88
+        },
+        {
+            "keyword": "殺し屋",
+            "chastity": 87
+        },
+        {
+            "keyword": "詐欺師",
+            "chastity": 80
+        },
+        {
+            "keyword": "小説家",
+            "chastity": 82
+        },
+        {
+            "keyword": "作家",
+            "chastity": 82
+        },
+        {
+            "keyword": "デザイナー",
+            "chastity": 75
+        },
+        {
+            "keyword": "建築",
+            "chastity": 76
+        },
+        {
+            "keyword": "美容師",
+            "chastity": 65
+        },
+        {
+            "keyword": "花屋",
+            "chastity": 68
+        },
+        {
+            "keyword": "カフェ",
+            "chastity": 60
+        },
+        {
+            "keyword": "同期",
+            "chastity": 65
+        },
+        {
+            "keyword": "後輩",
+            "chastity": 55
+        },
+        {
+            "keyword": "高校生",
+            "chastity": 50
+        },
+        {
+            "keyword": "芸人",
+            "chastity": 45
+        },
+        {
+            "keyword": "ギャンブラー",
+            "chastity": 40
+        },
+        {
+            "keyword": "ホスト",
+            "chastity": 35
+        },
+        {
+            "keyword": "レンタル",
+            "chastity": 35
+        },
+        {
+            "keyword": "ラッパー",
+            "chastity": 55
+        },
+        {
+            "keyword": "バンド",
+            "chastity": 50
+        },
+        {
+            "keyword": "声優",
+            "chastity": 60
+        },
+        {
+            "keyword": "アイドル",
+            "chastity": 62
+        },
+        {
+            "keyword": "俳優",
+            "chastity": 65
+        },
+        {
+            "keyword": "モデル",
+            "chastity": 58
+        },
+        {
+            "keyword": "ゲーマー",
+            "chastity": 48
+        }
+    ]
+}
