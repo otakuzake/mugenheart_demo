@@ -74,8 +74,8 @@ R18_BOOST_TEXT = """
 st.set_page_config(page_title="Mugen💗Heart", layout="wide", page_icon="🎲")
 
 # --- Web体験版: モデル固定 ---
-# Web体験版ではモデル選択機能を削除し、gemini-1.5-flashに固定
-FIXED_MODEL = "models/gemini-1.5-flash"
+# Web体験版ではモデル選択機能を削除し、gemini-3.0-flashに固定
+FIXED_MODEL = "models/gemini-3.0-flash"
 
 # Web体験版: APIキーファイルパスは使用しない（st.secretsから読み込む）
 # KEY_FILE_PATH = os.path.join(EXTERNAL_DIR, "api_key.json")  # Web体験版では不要
@@ -95,7 +95,7 @@ if "gemini_api_key" not in st.session_state:
         pass
     
     st.session_state.gemini_api_key = api_key
-    # Web体験版: モデルをgemini-1.5-flashに固定
+    # Web体験版: モデルをgemini-3.0-flashに固定
     st.session_state.gemini_model = FIXED_MODEL
 
 # B. Gemini Client (Web体験版: モデル固定)
@@ -1540,7 +1540,7 @@ def handle_input(user_input, chat_ph=None):
                     err_str = str(e)
                     if "Quota exceeded" in err_str or "429" in err_str:
                         st.toast(lang_mgr.get("text_0001", "⚠️ Proモデル制限到達。Flashモデルに切り替えます。"), icon="⚡")
-                        st.session_state.gemini_model = "models/gemini-1.5-flash"
+                        st.session_state.gemini_model = "models/gemini-3.0-flash"
                         if st.session_state.gemini_api_key:
                             st.session_state.gemini_client = GeminiClient(st.session_state.gemini_api_key, model_name=st.session_state.gemini_model)
                             continue
@@ -3985,126 +3985,6 @@ def safeguard_title_flow():
              st.session_state.phase = "title"
 
 # Web体験版: management_dialog() は削除されました
-
-    # フォルダパス定義
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DIR_SAVE = os.path.join(BASE_DIR, "assets", "SAVE")
-    DIR_CHARA = os.path.join(BASE_DIR, "assets", "CHARA")
-
-    # タブ作成
-    tab1, tab2 = st.tabs(["🕹️ セーブデータ", "📝 作成プリセット"])
-
-    # --- Tab 1: ゲームセーブデータ (assets/SAVE) ---
-    with tab1:
-        if os.path.exists(DIR_SAVE):
-            # JSONファイルを取得 (新しい順)
-            save_files = [f for f in os.listdir(DIR_SAVE) if f.endswith(".json")]
-            save_files.sort(key=lambda x: os.path.getmtime(os.path.join(DIR_SAVE, x)), reverse=True)
-
-            if not save_files:
-                st.info(lang_mgr.get("text_0080", lang_mgr.get("text_0085", lang_mgr.get("text_0124", "データなし"))))
-            else:
-                # マルチセレクトで選択
-                selected_saves = st.multiselect(lang_mgr.get("text_0081", lang_mgr.get("text_0086", "削除対象を選択")), save_files, key="del_save_multi")
-
-                if selected_saves:
-                    st.warning(lang_mgr.get("text_0082", "選択した {len(selected_saves)} 件を削除しますか？"))
-                    if st.button(lang_mgr.get("text_0083", "🗑️ 実行 (SAVE)"), type="primary", key="btn_exec_del_save"):
-                        for f in selected_saves:
-                            try:
-                                # JSONと、対になる画像(png)を削除
-                                os.remove(os.path.join(DIR_SAVE, f))
-                                png = f.replace(".json", ".png")
-                                if os.path.exists(os.path.join(DIR_SAVE, png)):
-                                    os.remove(os.path.join(DIR_SAVE, png))
-                            except: pass
-                        st.success(lang_mgr.get("text_0084", lang_mgr.get("text_0089", "削除完了")))
-                        time.sleep(1)
-                        st.rerun()
-
-    # --- Tab 2: キャラ作成プリセット (assets/CHARA) ---
-    with tab2:
-        if os.path.exists(DIR_CHARA):
-            chara_files = [f for f in os.listdir(DIR_CHARA) if f.endswith(".json")]
-            chara_files.sort(key=lambda x: os.path.getmtime(os.path.join(DIR_CHARA, x)), reverse=True)
-
-            if not chara_files:
-                st.info(lang_mgr.get("text_0080", lang_mgr.get("text_0085", lang_mgr.get("text_0124", "データなし"))))
-            else:
-                selected_charas = st.multiselect(lang_mgr.get("text_0081", lang_mgr.get("text_0086", "削除対象を選択")), chara_files, key="del_chara_multi")
-
-                if selected_charas:
-                    st.warning(lang_mgr.get("text_0087", lang_mgr.get("text_0101", "選択した {len(selected_charas)} 件を削除しますか？")))
-                    if st.button(lang_mgr.get("text_0088", "🗑️ 実行 (CHARA)"), type="primary", key="btn_exec_del_chara"):
-                        for f in selected_charas:
-                            try:
-                                os.remove(os.path.join(DIR_CHARA, f))
-                            except: pass
-                        st.success(lang_mgr.get("text_0084", lang_mgr.get("text_0089", "削除完了")))
-                        time.sleep(1)
-                        st.rerun()
-
-            if not save_files:
-                st.warning(lang_mgr.get("text_0090", "データが見つかりません。"))
-            else:
-                selected_saves = st.multiselect(lang_mgr.get("text_0091", "削除するデータを選択 (複数可)"), save_files, key="ms_save")
-
-                if selected_saves:
-                    st.warning(lang_mgr.get("text_0092", "選択した {len(selected_saves)} 件を完全に削除しますか？（画像も同時に消えます）"))
-                    if st.button(lang_mgr.get("text_0093", "🗑️ 削除実行 (SAVE)"), type="primary", key="del_save_exec"):
-                        count = 0
-                        for f in selected_saves:
-                            try:
-                                # JSON削除
-                                json_path = os.path.join(DIR_SAVE, f)
-                                if os.path.exists(json_path):
-                                    os.remove(json_path)
-
-                                # 対応するPNGがあれば削除 (同名の画像ファイル)
-                                png_name = f.replace(".json", ".png")
-                                png_path = os.path.join(DIR_SAVE, png_name)
-                                if os.path.exists(png_path):
-                                    os.remove(png_path)
-
-                                count += 1
-                            except Exception as e:
-                                st.error(lang_mgr.get("text_0094", "エラー: {f} - {e}"))
-
-                        st.success(lang_mgr.get("text_0095", "{count} 件のデータを削除しました"))
-                        time.sleep(1)
-                        st.rerun()
-        else:
-             st.error(lang_mgr.get("text_0096", "フォルダが見つかりません: {DIR_SAVE}"))
-
-    # --- Tab 2: assets/CHARA (入力プリセット) ---
-    with tab2:
-        st.caption(lang_mgr.get("text_0097", "参照フォルダ: `{DIR_CHARA}`"))
-        st.info(lang_mgr.get("text_0098", "ここにはキャラ作成画面で「保存」した入力内容（名前・設定など）が含まれます。"))
-
-        if os.path.exists(DIR_CHARA):
-            chara_files = [f for f in os.listdir(DIR_CHARA) if f.endswith(".json")]
-            chara_files.sort(reverse=True)
-
-            if not chara_files:
-                st.warning(lang_mgr.get("text_0099", "プリセットデータが見つかりません。"))
-            else:
-                selected_charas = st.multiselect(lang_mgr.get("text_0100", "削除するプリセットを選択"), chara_files, key="ms_chara")
-
-                if selected_charas:
-                    st.warning(lang_mgr.get("text_0087", lang_mgr.get("text_0101", "選択した {len(selected_charas)} 件を削除しますか？")))
-                    if st.button(lang_mgr.get("text_0102", "🗑️ 削除実行 (CHARA)"), type="primary", key="del_chara_exec"):
-                        for f in selected_charas:
-                            try:
-                                path = os.path.join(DIR_CHARA, f)
-                                os.remove(path)
-                            except Exception as e:
-                                st.error(lang_mgr.get("text_0103", "エラー: {e}"))
-
-                        st.success(lang_mgr.get("text_0104", "削除しました"))
-                        time.sleep(1)
-                        st.rerun()
-        else:
-             st.warning(lang_mgr.get("text_0105", "フォルダが見つかりません: {DIR_CHARA}"))
 
 
 
