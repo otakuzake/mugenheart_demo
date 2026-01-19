@@ -1991,14 +1991,27 @@ def game_start_dummy_if_needed():
         # Web体験版: セリフを別エントリとして追加
         # Web体験版: IS_DEMO_MODEは強制的にTrue
         IS_DEMO_MODE = True
+        # Web体験版: intro_dialogueが抽出できない場合はデフォルト台詞を使用
+        if not intro_dialogue:
+            intro_dialogue = "おね～さん、タバコもってない？"
+        
         if IS_DEMO_MODE and intro_dialogue:
             current_lang = st.session_state.get("language", "jp")
             if current_lang == "en":
                 char_name = "Keitaro Kaburagi"
+                # 英語版のデフォルト台詞
+                if intro_dialogue == "おね～さん、タバコもってない？":
+                    intro_dialogue = "Hey, sis, you got a cigarette?"
             elif current_lang == "zh-CN":
                 char_name = "鏑木圭太朗"
+                # 中国語簡体字版のデフォルト台詞
+                if intro_dialogue == "おね～さん、タバコもってない？":
+                    intro_dialogue = "姐姐，有烟吗？"
             elif current_lang == "zh-TW":
                 char_name = "鏑木圭太朗"
+                # 中国語繁体字版のデフォルト台詞
+                if intro_dialogue == "おね～さん、タバコもってない？":
+                    intro_dialogue = "姐姐，有煙嗎？"
             else:
                 char_name = "鏑木圭太朗"
             
@@ -4029,6 +4042,34 @@ def render_title_screen():
     if "title_bg_b64" not in st.session_state or not st.session_state.title_bg_b64:
         st.session_state.title_bg_b64 = load_b64_image(bg_path)
     bg_b64 = st.session_state.title_bg_b64
+
+    # --- 1.5) Language selector on sidebar (title screen) ---
+    with st.sidebar:
+        st.header("🌐 Language / 言語")
+        lang_options_sidebar = {
+            "日本語 (Japanese)": "jp",
+            "English": "en",
+            "简体中文 (Simplified Chinese)": "zh-CN",
+            "繁體中文 (Traditional Chinese)": "zh-TW",
+        }
+        current_lang = st.session_state.get("language", "jp")
+        current_lang_key = next(
+            (k for k, v in lang_options_sidebar.items() if v == current_lang),
+            "日本語 (Japanese)",
+        )
+        selected_lang_key = st.selectbox(
+            "Language / 言語",
+            options=list(lang_options_sidebar.keys()),
+            index=list(lang_options_sidebar.keys()).index(current_lang_key)
+            if current_lang_key in lang_options_sidebar
+            else 0,
+            key="lang_select_box_title",
+        )
+        selected_lang = lang_options_sidebar[selected_lang_key]
+        if selected_lang != st.session_state.get("language"):
+            st.session_state.language = selected_lang
+            lang_mgr.load_data(selected_lang, "female_target")
+            st.rerun()
 
     # --- 2) Background & Glass CSS (DX版の完全コピー) ---
     st.markdown(f"""
