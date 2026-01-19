@@ -71,7 +71,7 @@ R18_BOOST_TEXT = """
 """
 
 # Setup
-st.set_page_config(page_title="Mugen💗Heart", layout="wide", page_icon="🎲")
+st.set_page_config(page_title="Mugen💗Heart", layout="wide", page_icon="🎲", initial_sidebar_state="expanded")
 
 # --- Web体験版: モデル固定 ---
 # Web体験版ではモデル選択機能を削除し、gemini-3-flash-previewに固定
@@ -3022,6 +3022,11 @@ div[data-testid="stSpinner"] > div {
             # --- アプローチ実行ロジック ---
             if chosen_tone:
                 with st.spinner(lang_mgr.get("text_0047", "主人公の行動を思考中...")):
+                    # 0. gemini_clientの確認
+                    if not st.session_state.get("gemini_client"):
+                        st.error("APIキーが設定されていません。設定を確認してください。")
+                        st.stop()
+                    
                     # 1. ヒロイン名取得
                     h_obj = st.session_state.chat_heroine
                     if st.session_state.current_route == "sub":
@@ -3029,11 +3034,15 @@ div[data-testid="stSpinner"] > div {
                     h_name = getattr(h_obj, "name", "彼女")
 
                     # 2. LLMで主人公のセリフ生成
-                    user_text = st.session_state.gemini_client.generate_protagonist_response(
-                        st.session_state.chat_history, 
-                        chosen_tone, 
-                        h_name
-                    )
+                    try:
+                        user_text = st.session_state.gemini_client.generate_protagonist_response(
+                            st.session_state.chat_history, 
+                            chosen_tone, 
+                            h_name
+                        )
+                    except Exception as e:
+                        st.error(f"エラーが発生しました: {str(e)}")
+                        st.stop()
                     
                     # 3. handle_input に渡して実行（履歴追加＆ヒロイン返信）
                     # chat_ph は既存のプレースホルダー変数を使用
@@ -4082,6 +4091,14 @@ def render_title_screen():
         body:has(#title_phase_marker) section[data-testid="stSidebar"] {{
             visibility: visible !important;
             display: block !important;
+        }}
+        /* サイドバーのトグルボタンを表示 */
+        body:has(#title_phase_marker) button[data-testid="baseButton-header"] {{
+            visibility: visible !important;
+            display: block !important;
+        }}
+        body:has(#title_phase_marker) [data-testid="stSidebar"] {{
+            min-width: 21rem !important;
         }}
         
         body:has(#title_phase_marker) .stApp {{
