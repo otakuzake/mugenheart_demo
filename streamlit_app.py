@@ -2943,15 +2943,15 @@ div[data-testid="stSpinner"] > div {
                 width: 90%;
             ">
                 <h2 style="color: white; margin-bottom: 20px; font-size: 28px;">🎉 体験版をプレイしていただき、ありがとうございました！</h2>
-                <p style="color: rgba(255,255,255,0.95); font-size: 20px; margin-bottom: 30px; line-height: 1.6;">
-                    もっと楽しみたい方は、<br>
-                    ぜひフル版をご購入ください！
+                <p style="color: rgba(255,255,255,0.95); font-size: 20px; margin-bottom: 24px; line-height: 1.6;">
+                    最新情報は公式Xでお知らせします。<br>
+                    フォローしてアップデートをお待ちください！
                 </p>
-                <p style="color: rgba(255,255,255,0.9); font-size: 18px; margin-bottom: 25px;">
-                    <strong>つづきは製品版で！</strong>
+                <p style="color: rgba(255,255,255,0.9); font-size: 18px; margin-bottom: 20px;">
+                    <strong>つづきは続報で！</strong>
                 </p>
                 <a href="{demo_x_url}" target="_blank" style="display: inline-block; background: white; color: #667eea; padding: 18px 50px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); transition: transform 0.2s;">
-                    🛒 フル版を購入する
+                    🔔 Xで最新情報を確認！
                 </a>
             </div>
             <div style="
@@ -3110,29 +3110,28 @@ div[data-testid="stSpinner"] > div {
                             happening_text = lang_mgr.get("text_0194", "（ハプニングは収まった）")
                             st.session_state.chat_history.append({"role": "model", "parts": [happening_text], "speaker_name": "System"})
                         else:
-                            # その他のスキル解除時は多言語対応の処理
-                            skill_release_label = lang_mgr.get("text_0195", "（スキル解除）")
-                            skill_end_default = lang_mgr.get("text_0196", "効果が解除される。")
-                            skill_sense_return = lang_mgr.get("text_0197", "（彼の感覚は元に戻った。）")
-                            narration_base = f"{skill_release_label}\n{skill_data.get('end', skill_end_default)}"
-                            narration_base += f"\n{skill_sense_return}"
-                            st.session_state.chat_history.append({"role": "model", "parts": [narration_base], "speaker_name": "System"})
+                            # その他のスキル解除時はシステム文を出さずに簡潔なトースト＋リアクションのみ
+                            st.toast(lang_mgr.get("text_0195", "スキルを解除しました"), icon="💤")
                             
-                            # ★修正: 解除時のリアクション指示を分岐
+                            # ★修正: システム的なメッセージを残さず、自然なリアクションだけ生成
                             with st.spinner(lang_mgr.get("text_0050", "解除中...")): 
                                  # 現在のヒロイン取得
                                  h_obj = st.session_state.chat_heroine
-                                 if st.session_state.current_route == "sub": h_obj = st.session_state.chat_sub_heroine
+                                 if st.session_state.current_route == "sub": 
+                                     h_obj = st.session_state.chat_sub_heroine
                                  
-                                 # リアクション生成
+                                 # gemini_clientが無ければ終了
+                                 if not st.session_state.get("gemini_client"):
+                                     st.error("APIキーが設定されていません。設定を確認してください。")
+                                     st.stop()
+                                 
+                                 # リアクション生成: メタ説明なしで一言＋仕草のみ
                                  sys_prompt = h_obj.get_system_prompt(False, None)
-                                 
-                                 # 精神操作系の解除（正気に戻る）
-                                 sys_prompt += "\n【状況】スキル効果が切れ、正気に戻りました。「あれ？私なんでこんなこと...」という反応を描写してください。"
+                                 sys_prompt += "\n【状況】スキル効果が解除された直後。自然な一言と仕草だけを書いてください。メタ説明や指示文は書かないでください。3行以内。"
                                  
                                  res = st.session_state.gemini_client.generate_response(st.session_state.chat_history, sys_prompt)
                                  if res:
-                                     st.session_state.chat_history.append({"role": "model", "parts": [res], "speaker_name": h_obj.name})
+                                     st.session_state.chat_history.append({"role": "model", "parts": [res.strip()], "speaker_name": h_obj.name})
 
                         st.rerun()
 
