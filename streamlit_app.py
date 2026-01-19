@@ -3982,7 +3982,7 @@ def safeguard_title_flow():
     # If protagonist_set is False, we MUST be in title screen.
     if st.session_state.age_verified:
         if not st.session_state.protagonist_set and st.session_state.phase != "title":
-             st.session_state.phase = "title"
+            st.session_state.phase = "title"
 
 # Web体験版: management_dialog() は削除されました
 
