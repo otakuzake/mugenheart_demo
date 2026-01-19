@@ -1992,22 +1992,22 @@ def game_start_dummy_if_needed():
         # Web体験版: IS_DEMO_MODEは強制的にTrue
         IS_DEMO_MODE = True
         if IS_DEMO_MODE and intro_dialogue:
-        current_lang = st.session_state.get("language", "jp")
-        if current_lang == "en":
-            char_name = "Keitaro Kaburagi"
-        elif current_lang == "zh-CN":
-            char_name = "鏑木圭太朗"
-        elif current_lang == "zh-TW":
-            char_name = "鏑木圭太朗"
-        else:
-            char_name = "鏑木圭太朗"
-        
-        st.session_state.chat_history.append({
-            "role": "model",
-            "parts": [f"{char_name}「{intro_dialogue}」"],
-            "speaker": "main",
-            "speaker_name": char_name
-        })
+            current_lang = st.session_state.get("language", "jp")
+            if current_lang == "en":
+                char_name = "Keitaro Kaburagi"
+            elif current_lang == "zh-CN":
+                char_name = "鏑木圭太朗"
+            elif current_lang == "zh-TW":
+                char_name = "鏑木圭太朗"
+            else:
+                char_name = "鏑木圭太朗"
+            
+            st.session_state.chat_history.append({
+                "role": "model",
+                "parts": [f"{char_name}「{intro_dialogue}」"],
+                "speaker": "main",
+                "speaker_name": char_name
+            })
     
     # --- Enforce Main Route Start ---
     sc = st.session_state.get("start_choice") or "main"
