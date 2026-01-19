@@ -74,8 +74,8 @@ R18_BOOST_TEXT = """
 st.set_page_config(page_title="Mugen💗Heart", layout="wide", page_icon="🎲")
 
 # --- Web体験版: モデル固定 ---
-# Web体験版ではモデル選択機能を削除し、gemini-3.0-flashに固定
-FIXED_MODEL = "models/gemini-3.0-flash"
+# Web体験版ではモデル選択機能を削除し、gemini-3-flash-previewに固定
+FIXED_MODEL = "models/gemini-3-flash-preview"
 
 # Web体験版: APIキーファイルパスは使用しない（st.secretsから読み込む）
 # KEY_FILE_PATH = os.path.join(EXTERNAL_DIR, "api_key.json")  # Web体験版では不要
@@ -95,7 +95,7 @@ if "gemini_api_key" not in st.session_state:
         pass
     
     st.session_state.gemini_api_key = api_key
-    # Web体験版: モデルをgemini-3.0-flashに固定
+    # Web体験版: モデルをgemini-3-flash-previewに固定
     st.session_state.gemini_model = FIXED_MODEL
 
 # B. Gemini Client (Web体験版: モデル固定)
@@ -1540,7 +1540,7 @@ def handle_input(user_input, chat_ph=None):
                     err_str = str(e)
                     if "Quota exceeded" in err_str or "429" in err_str:
                         st.toast(lang_mgr.get("text_0001", "⚠️ Proモデル制限到達。Flashモデルに切り替えます。"), icon="⚡")
-                        st.session_state.gemini_model = "models/gemini-3.0-flash"
+                        st.session_state.gemini_model = "models/gemini-3-flash-preview"
                         if st.session_state.gemini_api_key:
                             st.session_state.gemini_client = GeminiClient(st.session_state.gemini_api_key, model_name=st.session_state.gemini_model)
                             continue
