@@ -1988,39 +1988,40 @@ def game_start_dummy_if_needed():
             "speaker_name": "System"
         })
     
-        # Web体験版: セリフを別エントリとして追加
-        # Web体験版: IS_DEMO_MODEは強制的にTrue
-        IS_DEMO_MODE = True
-        # Web体験版: intro_dialogueが抽出できない場合はデフォルト台詞を使用
-        if not intro_dialogue:
-            intro_dialogue = "おね～さん、タバコもってない？"
+    # Web体験版: セリフを別エントリとして追加
+    # Web体験版: IS_DEMO_MODEは強制的にTrue
+    IS_DEMO_MODE = True
+    # Web体験版: intro_dialogueが抽出できない場合はデフォルト台詞を使用
+    if not intro_dialogue:
+        intro_dialogue = "おね～さん、タバコもってない？"
+    
+    # Web体験版: 常に台詞を表示
+    if IS_DEMO_MODE and intro_dialogue:
+        current_lang = st.session_state.get("language", "jp")
+        if current_lang == "en":
+            char_name = "Keitaro Kaburagi"
+            # 英語版のデフォルト台詞
+            if intro_dialogue == "おね～さん、タバコもってない？":
+                intro_dialogue = "Hey, sis, you got a cigarette?"
+        elif current_lang == "zh-CN":
+            char_name = "鏑木圭太朗"
+            # 中国語簡体字版のデフォルト台詞
+            if intro_dialogue == "おね～さん、タバコもってない？":
+                intro_dialogue = "姐姐，有烟吗？"
+        elif current_lang == "zh-TW":
+            char_name = "鏑木圭太朗"
+            # 中国語繁体字版のデフォルト台詞
+            if intro_dialogue == "おね～さん、タバコもってない？":
+                intro_dialogue = "姐姐，有煙嗎？"
+        else:
+            char_name = "鏑木圭太朗"
         
-        if IS_DEMO_MODE and intro_dialogue:
-            current_lang = st.session_state.get("language", "jp")
-            if current_lang == "en":
-                char_name = "Keitaro Kaburagi"
-                # 英語版のデフォルト台詞
-                if intro_dialogue == "おね～さん、タバコもってない？":
-                    intro_dialogue = "Hey, sis, you got a cigarette?"
-            elif current_lang == "zh-CN":
-                char_name = "鏑木圭太朗"
-                # 中国語簡体字版のデフォルト台詞
-                if intro_dialogue == "おね～さん、タバコもってない？":
-                    intro_dialogue = "姐姐，有烟吗？"
-            elif current_lang == "zh-TW":
-                char_name = "鏑木圭太朗"
-                # 中国語繁体字版のデフォルト台詞
-                if intro_dialogue == "おね～さん、タバコもってない？":
-                    intro_dialogue = "姐姐，有煙嗎？"
-            else:
-                char_name = "鏑木圭太朗"
-            
-            st.session_state.chat_history.append({
-                "role": "model",
-                "parts": [f"{char_name}「{intro_dialogue}」"],
-                "speaker": "main",
-                "speaker_name": char_name
-            })
+        st.session_state.chat_history.append({
+            "role": "model",
+            "parts": [f"{char_name}「{intro_dialogue}」"],
+            "speaker": "main",
+            "speaker_name": char_name
+        })
     
     # --- Enforce Main Route Start ---
     sc = st.session_state.get("start_choice") or "main"
@@ -4077,6 +4078,11 @@ def render_title_screen():
         body:has(#title_phase_marker) header[data-testid="stHeader"] {{ visibility: hidden; height: 0; }}
         body:has(#title_phase_marker) footer {{ visibility: hidden; height: 0; }}
         body:has(#title_phase_marker) #MainMenu {{ visibility: hidden; }}
+        /* サイドバーを表示（折りたたみ可能） */
+        body:has(#title_phase_marker) section[data-testid="stSidebar"] {{
+            visibility: visible !important;
+            display: block !important;
+        }}
         
         body:has(#title_phase_marker) .stApp {{
             background-color: #0b0d12 !important;
